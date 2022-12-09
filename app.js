@@ -202,6 +202,11 @@ app.post('/urls/:id/edit', (req, res) => {
     return res.send('Url does not exist!');
   }
 
+  const urlBelongsToUser = url.userId === userId;
+  if (!urlBelongsToUser) {
+    return res.send('Url does not belongs to current user');
+  }
+
   const { longURL } = req.body;
   urlDatabase[req.params.id].longURL = longURL;
   res.redirect('/urls');
@@ -222,6 +227,11 @@ app.post('/urls/:id/delete', (req, res) => {
   const url = urlDatabase[req.params.id];
   if (!url) {
     return res.send('Url does not exist!');
+  }
+
+  const urlBelongsToUser = url.userId === userId;
+  if (!urlBelongsToUser) {
+    return res.send('Url does not belongs to current user');
   }
 
   delete urlDatabase[req.params.id];
