@@ -3,8 +3,16 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 
 const urlDatabase = {
-  q2w3e4: 'https://www.lighthouselabs.ca',
-  a1s2d3: 'https://www.google.com',
+  q2w3e4: {
+    id: 'q2w3e4',
+    longURL: 'https://www.lighthouselabs.ca',
+    userId: 'o9i8u7',
+  },
+  a1s2d3: {
+    id: 'a1s2d3',
+    longURL: 'https://www.google.com',
+    userId: 'g5h6j7',
+  },
 };
 
 const usersDatabase = {
@@ -103,9 +111,9 @@ app.get('/urls/:id', (req, res) => {
   }
 
   const { id } = req.params;
-  const longURL = urlDatabase[id];
+  const url = urlDatabase[id];
 
-  const templateVars = { id, longURL, user };
+  const templateVars = { id, url, user };
   res.render('urls/show', templateVars);
 });
 
@@ -146,7 +154,7 @@ app.post('/urls', (req, res) => {
 
   const { longURL } = req.body;
   const id = generateNewId();
-  urlDatabase[id] = longURL;
+  urlDatabase[id] = { id, longURL, userId };
   res.redirect('/urls');
 });
 
@@ -158,8 +166,11 @@ app.get('/urls.json', (req, res) => {
 // Read one - GET
 app.get('/u/:id', (req, res) => {
   const { id } = req.params;
-  const { longURL } = urlDatabase[id];
-  res.redirect(longURL);
+  const url = urlDatabase[id];
+  if (!url) {
+    return;
+  }
+  res.redirect(url.longURL);
 });
 
 // Update - POST
@@ -176,7 +187,7 @@ app.post('/urls/:id/edit', (req, res) => {
 
   const { longURL } = req.body;
   const { id } = req.params;
-  urlDatabase[id] = longURL;
+  urlDatabase[id].longURL = longURL;
   res.redirect('/urls');
 });
 
