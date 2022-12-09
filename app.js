@@ -131,8 +131,26 @@ app.post('/register', (req, res) => {
 
 // Login
 app.post('/login', (req, res) => {
-  const { email } = req.body;
-  res.cookie('user', email);
+  const { email, password } = req.body;
+
+  let user = null;
+  for (const id in usersDatabase) {
+    const usr = usersDatabase[id];
+    console.log(usr);
+    if (usr.email === email) {
+      user = usersDatabase[id];
+    }
+  }
+
+  if (!user) {
+    return res.send('User not found!');
+  }
+
+  if (user.password !== password) {
+    return res.send('Incorrect password');
+  }
+
+  res.cookie('user', user.email);
   res.redirect('/urls');
 });
 
