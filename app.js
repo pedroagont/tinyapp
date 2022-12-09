@@ -72,6 +72,14 @@ app.post('/urls/:id/edit', (req, res) => {
   res.redirect('/urls');
 });
 
+// Delete - POST
+app.post('/urls/:id/delete', (req, res) => {
+  const { id } = req.params;
+  delete urlDatabase[id];
+  console.log(urlDatabase);
+  res.redirect('/urls');
+});
+
 // ------------ LISTENER
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
