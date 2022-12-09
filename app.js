@@ -80,7 +80,7 @@ app.get('/', (req, res) => {
 app.get('/urls', (req, res) => {
   const { userId } = req.cookies;
   if (!userId) {
-    return res.redirect('/login');
+    return res.send('User is not logged in!');
   }
 
   const user = usersDatabase[userId];
@@ -97,7 +97,7 @@ app.get('/urls', (req, res) => {
 app.get('/urls/new', (req, res) => {
   const { userId } = req.cookies;
   if (!userId) {
-    return res.redirect('/login');
+    return res.send('User is not logged in!');
   }
 
   const user = usersDatabase[userId];
@@ -113,7 +113,7 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls/:id', (req, res) => {
   const { userId } = req.cookies;
   if (!userId) {
-    return res.redirect('/login');
+    return res.send('User is not logged in!');
   }
 
   const user = usersDatabase[userId];
