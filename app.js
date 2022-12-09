@@ -50,6 +50,17 @@ const getUserByEmail = (email) => {
   return user;
 };
 
+const getUrlsByUserId = (userId) => {
+  const urls = {};
+  for (const id in urlDatabase) {
+    const u = urlDatabase[id];
+    if (u.userId === userId) {
+      urls[id] = urlDatabase[id];
+    }
+  }
+  return urls;
+};
+
 // ------------ SETUP AND MIDDLEWARES
 const app = express();
 const port = 3000;
@@ -77,14 +88,7 @@ app.get('/urls', (req, res) => {
     return res.send('Invalid user');
   }
 
-  const urls = {};
-  for (const id in urlDatabase) {
-    const u = urlDatabase[id];
-    if (u.userId === userId) {
-      urls[id] = urlDatabase[id];
-    }
-  }
-
+  const urls = getUrlsByUserId(user.id);
   const templateVars = { urls, user };
   res.render('urls/index', templateVars);
 });
