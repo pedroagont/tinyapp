@@ -63,6 +63,15 @@ app.get('/u/:id', (req, res) => {
   res.redirect(longURL);
 });
 
+// Update - POST
+app.post('/urls/:id/edit', (req, res) => {
+  const { longURL } = req.body;
+  const { id } = req.params;
+  urlDatabase[id] = longURL;
+  console.log(urlDatabase);
+  res.redirect('/urls');
+});
+
 // ------------ LISTENER
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);

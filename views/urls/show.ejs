@@ -20,15 +20,38 @@
     <%- include('../partials/_header') %>
     <main class="container">
       <h1 class="display-5 text-center py-5">Short URL 🔗</h1>
-      <div class="card text-center">
+      <div class="card">
         <div class="card-header"></div>
-        <div class="card-body">
+        <div class="card-body text-center">
           <h5 class="card-title">TinyURL for: <%= longURL %></h5>
           <p class="card-text">
             Short URL ID: <a href="/u/<%= id %>"><%= id %></a>
           </p>
         </div>
-        <div class="card-footer"></div>
+        <div class="card-footer">
+          <form
+            class="d-flex flex-column"
+            method="POST"
+            action="/urls/<%= id %>/edit"
+          >
+            <div class="mb-3">
+              <label for="longURL" class="form-label">Edit URL</label>
+              <input
+                type="url"
+                class="form-control"
+                id="longURL"
+                aria-describedby="longURLHelp"
+                name="longURL"
+                value="<%= longURL %>"
+                required
+              />
+              <div id="longURLHelp" class="form-text">
+                Here it goes your new long URL! Make sure it starts with "http"
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
       </div>
     </main>
   </body>
