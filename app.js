@@ -123,6 +123,19 @@ app.post('/urls/:id/delete', (req, res) => {
 // Register
 app.post('/register', (req, res) => {
   const { email, password } = req.body;
+
+  let user = null;
+  for (const id in usersDatabase) {
+    const usr = usersDatabase[id];
+    if (usr.email === email) {
+      user = usersDatabase[id];
+    }
+  }
+
+  if (user) {
+    return res.send('User already exists!');
+  }
+
   const id = generateNewId();
   usersDatabase[id] = { email, password };
   console.log(usersDatabase);
