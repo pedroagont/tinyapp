@@ -22,10 +22,16 @@
             <a class="nav-link" href="/urls/new">New URL</a>
           </li>
         </ul>
+        <% if(user){ %>
+        <form class="d-flex" method="POST" action="/logout">
+          <button class="btn btn-outline-warning" type="submit">Logout</button>
+        </form>
+        <% } else { %>
         <form class="d-flex" method="POST" action="/login">
           <input class="form-control" type="email" name="email" required />
           <button class="btn btn-outline-light" type="submit">Login</button>
         </form>
+        <% } %>
       </div>
     </div>
   </nav>
