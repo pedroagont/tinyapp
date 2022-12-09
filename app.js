@@ -166,6 +166,10 @@ app.post('/urls', (req, res) => {
   }
 
   const { longURL } = req.body;
+  if (!longURL) {
+    return res.send('Please provide longURL!');
+  }
+
   const id = generateNewId();
   urlDatabase[id] = { id, longURL, userId };
   res.redirect('/urls');
@@ -182,6 +186,7 @@ app.get('/u/:id', (req, res) => {
   if (!url) {
     return res.send('Url does not exist!');
   }
+
   res.redirect(url.longURL);
 });
 
@@ -208,6 +213,10 @@ app.post('/urls/:id/edit', (req, res) => {
   }
 
   const { longURL } = req.body;
+  if (!longURL) {
+    return res.send('Please provide longURL!');
+  }
+
   urlDatabase[req.params.id].longURL = longURL;
   res.redirect('/urls');
 });
@@ -247,6 +256,9 @@ app.post('/register', (req, res) => {
   }
 
   const { email, password } = req.body;
+  if ((!email, !password)) {
+    return res.send('Please provide email and password!');
+  }
 
   let emailExists = getUserByEmail(email);
   if (emailExists) {
@@ -266,13 +278,17 @@ app.post('/login', (req, res) => {
   }
 
   const { email, password } = req.body;
+  if ((!email, !password)) {
+    return res.send('Please provide email and password!');
+  }
 
   const user = getUserByEmail(email);
   if (!user) {
     return res.send('User not found!');
   }
 
-  if (user.password !== password) {
+  const passwordsMatch = user.password === password;
+  if (!passwordsMatch) {
     return res.send('Incorrect password');
   }
 
