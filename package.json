@@ -1,0 +1,21 @@
+{
+  "name": "tinyapp",
+  "version": "1.0.0",
+  "description": "A full stack web app built with Node and Express that allows users to shorten long URLs (à la bit.ly).",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "tinyurl",
+    "url",
+    "shortener"
+  ],
+  "author": "Pedro A. González",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}
