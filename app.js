@@ -1,5 +1,6 @@
 // ------------ REQUIREMENTS
 const express = require('express');
+const cookieParser = require('cookie-parser');
 
 const generateNewId = (length = 6) => {
   let result = '';
@@ -23,6 +24,7 @@ const port = 3000;
 
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // ------------ ROUTES/ENDPOINTS
 // Rendering routes
@@ -33,6 +35,8 @@ app.get('/', (req, res) => {
 
 // GET My URLs
 app.get('/urls', (req, res) => {
+  const { user } = req.cookies;
+  console.log(user);
   const templateVars = {
     urls: urlDatabase,
   };
@@ -88,6 +92,14 @@ app.post('/urls/:id/delete', (req, res) => {
   const { id } = req.params;
   delete urlDatabase[id];
   console.log(urlDatabase);
+  res.redirect('/urls');
+});
+
+// Auth API routes
+// Login
+app.post('/login', (req, res) => {
+  const { email } = req.body;
+  res.cookie('user', email);
   res.redirect('/urls');
 });
 
