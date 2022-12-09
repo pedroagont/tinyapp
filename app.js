@@ -18,6 +18,17 @@ const urlDatabase = {
   a1s2d3: 'https://www.google.com',
 };
 
+const usersDatabase = {
+  o9i8u7: {
+    email: 'user1@example.com',
+    password: '123',
+  },
+  g5h6j7: {
+    email: 'user2@example.com',
+    password: '123',
+  },
+};
+
 // ------------ SETUP AND MIDDLEWARES
 const app = express();
 const port = 3000;
@@ -55,6 +66,18 @@ app.get('/urls/:id', (req, res) => {
   const { user } = req.cookies;
   const templateVars = { id, longURL, user };
   res.render('urls/show', templateVars);
+});
+
+// GET Register
+app.get('/register', (req, res) => {
+  const templateVars = { user: null };
+  res.render('auth/register', templateVars);
+});
+
+// GET Login
+app.get('/login', (req, res) => {
+  const templateVars = { user: null };
+  res.render('auth/login', templateVars);
 });
 
 // URLs CRUD API routes
@@ -97,6 +120,15 @@ app.post('/urls/:id/delete', (req, res) => {
 });
 
 // Auth API routes
+// Register
+app.post('/register', (req, res) => {
+  const { email, password } = req.body;
+  const id = generateNewId();
+  usersDatabase[id] = { email, password };
+  console.log(usersDatabase);
+  res.redirect('/login');
+});
+
 // Login
 app.post('/login', (req, res) => {
   const { email } = req.body;
