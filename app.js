@@ -2,17 +2,6 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
 
-const generateNewId = (length = 6) => {
-  let result = '';
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-};
-
 const urlDatabase = {
   q2w3e4: 'https://www.lighthouselabs.ca',
   a1s2d3: 'https://www.google.com',
@@ -27,6 +16,28 @@ const usersDatabase = {
     email: 'user2@example.com',
     password: '123',
   },
+};
+
+const generateNewId = (length = 6) => {
+  let result = '';
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};
+
+const getUserByEmail = (email) => {
+  let user = null;
+  for (const id in usersDatabase) {
+    const usr = usersDatabase[id];
+    if (usr.email === email) {
+      user = usersDatabase[id];
+    }
+  }
+  return user;
 };
 
 // ------------ SETUP AND MIDDLEWARES
@@ -86,7 +97,6 @@ app.post('/urls', (req, res) => {
   const { longURL } = req.body;
   const id = generateNewId();
   urlDatabase[id] = longURL;
-  console.log(urlDatabase);
   res.redirect('/urls');
 });
 
@@ -107,7 +117,6 @@ app.post('/urls/:id/edit', (req, res) => {
   const { longURL } = req.body;
   const { id } = req.params;
   urlDatabase[id] = longURL;
-  console.log(urlDatabase);
   res.redirect('/urls');
 });
 
@@ -115,7 +124,6 @@ app.post('/urls/:id/edit', (req, res) => {
 app.post('/urls/:id/delete', (req, res) => {
   const { id } = req.params;
   delete urlDatabase[id];
-  console.log(urlDatabase);
   res.redirect('/urls');
 });
 
@@ -124,21 +132,13 @@ app.post('/urls/:id/delete', (req, res) => {
 app.post('/register', (req, res) => {
   const { email, password } = req.body;
 
-  let user = null;
-  for (const id in usersDatabase) {
-    const usr = usersDatabase[id];
-    if (usr.email === email) {
-      user = usersDatabase[id];
-    }
-  }
-
+  let user = getUserByEmail(email);
   if (user) {
     return res.send('User already exists!');
   }
 
   const id = generateNewId();
   usersDatabase[id] = { email, password };
-  console.log(usersDatabase);
   res.redirect('/login');
 });
 
@@ -146,15 +146,7 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
 
-  let user = null;
-  for (const id in usersDatabase) {
-    const usr = usersDatabase[id];
-    console.log(usr);
-    if (usr.email === email) {
-      user = usersDatabase[id];
-    }
-  }
-
+  const user = getUserByEmail(email);
   if (!user) {
     return res.send('User not found!');
   }
