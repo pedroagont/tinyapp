@@ -21,6 +21,20 @@ app.get('/urls.json', (req, res) => {
   res.send(urlDatabase);
 });
 
+app.get('/urls', (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+  };
+  res.render('urls/index', templateVars);
+});
+
+app.get('/urls/:id', (req, res) => {
+  const { id } = req.params;
+  const longURL = urlDatabase[id];
+  const templateVars = { id, longURL };
+  res.render('urls/show', templateVars);
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
