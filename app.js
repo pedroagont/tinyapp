@@ -36,23 +36,24 @@ app.get('/', (req, res) => {
 // GET My URLs
 app.get('/urls', (req, res) => {
   const { user } = req.cookies;
-  console.log(user);
-  const templateVars = {
-    urls: urlDatabase,
-  };
+  const urls = urlDatabase;
+  const templateVars = { urls, user };
   res.render('urls/index', templateVars);
 });
 
 // GET New URL
 app.get('/urls/new', (req, res) => {
-  res.render('urls/new');
+  const { user } = req.cookies;
+  const templateVars = { user };
+  res.render('urls/new', templateVars);
 });
 
 // GET Show URL
 app.get('/urls/:id', (req, res) => {
   const { id } = req.params;
   const longURL = urlDatabase[id];
-  const templateVars = { id, longURL };
+  const { user } = req.cookies;
+  const templateVars = { id, longURL, user };
   res.render('urls/show', templateVars);
 });
 
@@ -100,6 +101,12 @@ app.post('/urls/:id/delete', (req, res) => {
 app.post('/login', (req, res) => {
   const { email } = req.body;
   res.cookie('user', email);
+  res.redirect('/urls');
+});
+
+// Logout
+app.post('/logout', (req, res) => {
+  res.clearCookie('user');
   res.redirect('/urls');
 });
 
