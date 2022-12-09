@@ -77,7 +77,14 @@ app.get('/urls', (req, res) => {
     return res.send('Invalid user');
   }
 
-  const urls = urlDatabase;
+  const urls = {};
+  for (const id in urlDatabase) {
+    const u = urlDatabase[id];
+    if (u.userId === userId) {
+      urls[id] = urlDatabase[id];
+    }
+  }
+
   const templateVars = { urls, user };
   res.render('urls/index', templateVars);
 });
