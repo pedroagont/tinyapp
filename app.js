@@ -9,10 +9,12 @@ const urlDatabase = {
 
 const usersDatabase = {
   o9i8u7: {
+    id: 'o9i8u7',
     email: 'user1@example.com',
     password: '123',
   },
   g5h6j7: {
+    id: 'g5h6j7',
     email: 'user2@example.com',
     password: '123',
   },
@@ -57,7 +59,16 @@ app.get('/', (req, res) => {
 
 // GET My URLs
 app.get('/urls', (req, res) => {
-  const { user } = req.cookies;
+  const { userId } = req.cookies;
+  if (!userId) {
+    return res.redirect('/login');
+  }
+
+  const user = usersDatabase[userId];
+  if (!user) {
+    return res.send('Invalid user');
+  }
+
   const urls = urlDatabase;
   const templateVars = { urls, user };
   res.render('urls/index', templateVars);
@@ -65,28 +76,57 @@ app.get('/urls', (req, res) => {
 
 // GET New URL
 app.get('/urls/new', (req, res) => {
-  const { user } = req.cookies;
+  const { userId } = req.cookies;
+  if (!userId) {
+    return res.redirect('/login');
+  }
+
+  const user = usersDatabase[userId];
+  if (!user) {
+    return res.send('Invalid user');
+  }
+
   const templateVars = { user };
   res.render('urls/new', templateVars);
 });
 
 // GET Show URL
 app.get('/urls/:id', (req, res) => {
+  const { userId } = req.cookies;
+  if (!userId) {
+    return res.redirect('/login');
+  }
+
+  const user = usersDatabase[userId];
+  if (!user) {
+    return res.send('Invalid user');
+  }
+
   const { id } = req.params;
   const longURL = urlDatabase[id];
-  const { user } = req.cookies;
+
   const templateVars = { id, longURL, user };
   res.render('urls/show', templateVars);
 });
 
 // GET Register
 app.get('/register', (req, res) => {
+  const { userId } = req.cookies;
+  if (userId) {
+    return res.redirect('/urls');
+  }
+
   const templateVars = { user: null };
   res.render('auth/register', templateVars);
 });
 
 // GET Login
 app.get('/login', (req, res) => {
+  const { userId } = req.cookies;
+  if (userId) {
+    return res.redirect('/urls');
+  }
+
   const templateVars = { user: null };
   res.render('auth/login', templateVars);
 });
@@ -94,6 +134,16 @@ app.get('/login', (req, res) => {
 // URLs CRUD API routes
 // Create - POST
 app.post('/urls', (req, res) => {
+  const { userId } = req.cookies;
+  if (!userId) {
+    return res.send('User is not logged in!');
+  }
+
+  const user = usersDatabase[userId];
+  if (!user) {
+    return res.send('Invalid user');
+  }
+
   const { longURL } = req.body;
   const id = generateNewId();
   urlDatabase[id] = longURL;
@@ -108,12 +158,22 @@ app.get('/urls.json', (req, res) => {
 // Read one - GET
 app.get('/u/:id', (req, res) => {
   const { id } = req.params;
-  const longURL = urlDatabase[id];
+  const { longURL } = urlDatabase[id];
   res.redirect(longURL);
 });
 
 // Update - POST
 app.post('/urls/:id/edit', (req, res) => {
+  const { userId } = req.cookies;
+  if (!userId) {
+    return res.send('User is not logged in!');
+  }
+
+  const user = usersDatabase[userId];
+  if (!user) {
+    return res.send('Invalid user');
+  }
+
   const { longURL } = req.body;
   const { id } = req.params;
   urlDatabase[id] = longURL;
@@ -122,6 +182,16 @@ app.post('/urls/:id/edit', (req, res) => {
 
 // Delete - POST
 app.post('/urls/:id/delete', (req, res) => {
+  const { userId } = req.cookies;
+  if (!userId) {
+    return res.send('User is not logged in!');
+  }
+
+  const user = usersDatabase[userId];
+  if (!user) {
+    return res.send('Invalid user');
+  }
+
   const { id } = req.params;
   delete urlDatabase[id];
   res.redirect('/urls');
@@ -130,20 +200,30 @@ app.post('/urls/:id/delete', (req, res) => {
 // Auth API routes
 // Register
 app.post('/register', (req, res) => {
+  const { userId } = req.cookies;
+  if (userId) {
+    return res.send('User is already logged in!');
+  }
+
   const { email, password } = req.body;
 
-  let user = getUserByEmail(email);
-  if (user) {
+  let emailExists = getUserByEmail(email);
+  if (emailExists) {
     return res.send('User already exists!');
   }
 
   const id = generateNewId();
-  usersDatabase[id] = { email, password };
+  usersDatabase[id] = { id, email, password };
   res.redirect('/login');
 });
 
 // Login
 app.post('/login', (req, res) => {
+  const { userId } = req.cookies;
+  if (userId) {
+    return res.send('User is already logged in!');
+  }
+
   const { email, password } = req.body;
 
   const user = getUserByEmail(email);
@@ -155,13 +235,18 @@ app.post('/login', (req, res) => {
     return res.send('Incorrect password');
   }
 
-  res.cookie('user', user.email);
+  res.cookie('userId', user.id);
   res.redirect('/urls');
 });
 
 // Logout
 app.post('/logout', (req, res) => {
-  res.clearCookie('user');
+  const { userId } = req.cookies;
+  if (!userId) {
+    return res.send('User is not logged in!');
+  }
+
+  res.clearCookie('userId');
   res.redirect('/urls');
 });
 
