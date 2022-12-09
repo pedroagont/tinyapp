@@ -56,6 +56,13 @@ app.get('/urls.json', (req, res) => {
   res.send(urlDatabase);
 });
 
+// Read one - GET
+app.get('/u/:id', (req, res) => {
+  const { id } = req.params;
+  const longURL = urlDatabase[id];
+  res.redirect(longURL);
+});
+
 // ------------ LISTENER
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
