@@ -121,10 +121,12 @@ app.get('/urls/:id', (req, res) => {
     return res.send('Invalid user');
   }
 
-  const { id } = req.params;
-  const url = urlDatabase[id];
+  const url = urlDatabase[req.params.id];
+  if (!url) {
+    return res.send('Url does not exist!');
+  }
 
-  const templateVars = { id, url, user };
+  const templateVars = { url, user };
   res.render('urls/show', templateVars);
 });
 
@@ -176,10 +178,9 @@ app.get('/urls.json', (req, res) => {
 
 // Read one - GET
 app.get('/u/:id', (req, res) => {
-  const { id } = req.params;
-  const url = urlDatabase[id];
+  const url = urlDatabase[req.params.id];
   if (!url) {
-    return;
+    return res.send('Url does not exist!');
   }
   res.redirect(url.longURL);
 });
@@ -196,9 +197,13 @@ app.post('/urls/:id/edit', (req, res) => {
     return res.send('Invalid user');
   }
 
+  const url = urlDatabase[req.params.id];
+  if (!url) {
+    return res.send('Url does not exist!');
+  }
+
   const { longURL } = req.body;
-  const { id } = req.params;
-  urlDatabase[id].longURL = longURL;
+  urlDatabase[req.params.id].longURL = longURL;
   res.redirect('/urls');
 });
 
@@ -214,8 +219,12 @@ app.post('/urls/:id/delete', (req, res) => {
     return res.send('Invalid user');
   }
 
-  const { id } = req.params;
-  delete urlDatabase[id];
+  const url = urlDatabase[req.params.id];
+  if (!url) {
+    return res.send('Url does not exist!');
+  }
+
+  delete urlDatabase[req.params.id];
   res.redirect('/urls');
 });
 
