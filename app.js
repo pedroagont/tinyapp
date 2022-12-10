@@ -1,7 +1,7 @@
 // ------------ REQUIREMENTS
 const express = require('express');
-const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
+const cookieSession = require('cookie-session');
 
 const urlDatabase = {
   q2w3e4: {
@@ -68,7 +68,16 @@ const port = 3000;
 
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(
+  cookieSession({
+    name: 'session',
+    keys: ['mySecretKey1', 'mySuperSecretKey2'],
+
+    // Cookie Options
+    // maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 10 * 60 * 1000, // 10 min
+  })
+);
 
 // ------------ ROUTES/ENDPOINTS
 // Rendering routes
@@ -79,7 +88,7 @@ app.get('/', (req, res) => {
 
 // GET My URLs
 app.get('/urls', (req, res) => {
-  const { userId } = req.cookies;
+  const { userId } = req.session;
   if (!userId) {
     const templateVars = {
       error: 'User is not logged in!',
@@ -94,6 +103,7 @@ app.get('/urls', (req, res) => {
       error: 'Invalid user!',
       user: null,
     };
+    req.session = null;
     return res.render('error', templateVars);
   }
 
@@ -104,7 +114,7 @@ app.get('/urls', (req, res) => {
 
 // GET New URL
 app.get('/urls/new', (req, res) => {
-  const { userId } = req.cookies;
+  const { userId } = req.session;
   if (!userId) {
     const templateVars = {
       error: 'User is not logged in!',
@@ -119,6 +129,7 @@ app.get('/urls/new', (req, res) => {
       error: 'Invalid user!',
       user: null,
     };
+    req.session = null;
     return res.render('error', templateVars);
   }
 
@@ -128,7 +139,7 @@ app.get('/urls/new', (req, res) => {
 
 // GET Show URL
 app.get('/urls/:id', (req, res) => {
-  const { userId } = req.cookies;
+  const { userId } = req.session;
   if (!userId) {
     const templateVars = {
       error: 'User is not logged in!',
@@ -143,6 +154,7 @@ app.get('/urls/:id', (req, res) => {
       error: 'Invalid user!',
       user: null,
     };
+    req.session = null;
     return res.render('error', templateVars);
   }
 
@@ -170,7 +182,7 @@ app.get('/urls/:id', (req, res) => {
 
 // GET Register
 app.get('/register', (req, res) => {
-  const { userId } = req.cookies;
+  const { userId } = req.session;
   if (userId) {
     return res.redirect('/urls');
   }
@@ -181,7 +193,7 @@ app.get('/register', (req, res) => {
 
 // GET Login
 app.get('/login', (req, res) => {
-  const { userId } = req.cookies;
+  const { userId } = req.session;
   if (userId) {
     return res.redirect('/urls');
   }
@@ -193,7 +205,7 @@ app.get('/login', (req, res) => {
 // URLs CRUD API routes
 // Create - POST
 app.post('/urls', (req, res) => {
-  const { userId } = req.cookies;
+  const { userId } = req.session;
   if (!userId) {
     const templateVars = {
       error: 'User is not logged in!',
@@ -208,6 +220,7 @@ app.post('/urls', (req, res) => {
       error: 'Invalid user!',
       user: null,
     };
+    req.session = null;
     return res.render('error', templateVars);
   }
 
@@ -255,7 +268,7 @@ app.get('/u/:id', (req, res) => {
 
 // Update - POST
 app.post('/urls/:id/edit', (req, res) => {
-  const { userId } = req.cookies;
+  const { userId } = req.session;
   if (!userId) {
     const templateVars = {
       error: 'User is not logged in!',
@@ -270,6 +283,7 @@ app.post('/urls/:id/edit', (req, res) => {
       error: 'Invalid user!',
       user: null,
     };
+    req.session = null;
     return res.render('error', templateVars);
   }
 
@@ -315,7 +329,7 @@ app.post('/urls/:id/edit', (req, res) => {
 
 // Delete - POST
 app.post('/urls/:id/delete', (req, res) => {
-  const { userId } = req.cookies;
+  const { userId } = req.session;
   if (!userId) {
     const templateVars = {
       error: 'User is not logged in!',
@@ -330,6 +344,7 @@ app.post('/urls/:id/delete', (req, res) => {
       error: 'Invalid user!',
       user: null,
     };
+    req.session = null;
     return res.render('error', templateVars);
   }
 
@@ -358,7 +373,7 @@ app.post('/urls/:id/delete', (req, res) => {
 // Auth API routes
 // Register
 app.post('/register', (req, res) => {
-  const { userId } = req.cookies;
+  const { userId } = req.session;
   if (userId) {
     const templateVars = {
       error: 'User is already logged in!',
@@ -389,13 +404,13 @@ app.post('/register', (req, res) => {
   password = bcrypt.hashSync(password, 10);
   usersDatabase[id] = { id, email, password };
 
-  res.cookie('userId', usersDatabase[id].id);
+  req.session.userId = usersDatabase[id].id;
   res.redirect('/');
 });
 
 // Login
 app.post('/login', (req, res) => {
-  const { userId } = req.cookies;
+  const { userId } = req.session;
   if (userId) {
     const templateVars = {
       error: 'User is already logged in!',
@@ -431,13 +446,13 @@ app.post('/login', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  res.cookie('userId', user.id);
+  req.session.userId = user.id;
   res.redirect('/');
 });
 
 // Logout
 app.post('/logout', (req, res) => {
-  const { userId } = req.cookies;
+  const { userId } = req.session;
   if (!userId) {
     const templateVars = {
       error: 'User is not logged in!',
@@ -446,7 +461,7 @@ app.post('/logout', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  res.clearCookie('userId');
+  req.session = null;
   res.redirect('/login');
 });
 
