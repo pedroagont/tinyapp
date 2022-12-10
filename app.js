@@ -2,6 +2,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
+const morgan = require('morgan');
 
 const { generateNewId, getUserByEmail, getUrlsByUserId } = require('./utils');
 const db = require('./db');
@@ -22,6 +23,7 @@ app.use(
     maxAge: 10 * 60 * 1000, // 10 min
   })
 );
+app.use(morgan('dev'));
 
 // ------------ ROUTES/ENDPOINTS
 // Rendering routes
