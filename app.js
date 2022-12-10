@@ -29,7 +29,7 @@ app.use(morgan('dev'));
 // Rendering routes
 // GET Homepage
 app.get('/', (req, res) => {
-  res.render('index');
+  res.status(200).render('index');
 });
 
 // GET My URLs
@@ -40,7 +40,7 @@ app.get('/urls', (req, res) => {
       error: 'User is not logged in!',
       user: null,
     };
-    return res.render('error', templateVars);
+    return res.status(401).render('error', templateVars);
   }
 
   const user = db['users'][userId];
@@ -50,12 +50,12 @@ app.get('/urls', (req, res) => {
       user: null,
     };
     req.session = null;
-    return res.render('error', templateVars);
+    return res.status(401).render('error', templateVars);
   }
 
   const urls = getUrlsByUserId(user.id, db['urls']);
   const templateVars = { urls, user };
-  res.render('urls/index', templateVars);
+  res.status(200).render('urls/index', templateVars);
 });
 
 // GET New URL
@@ -66,7 +66,7 @@ app.get('/urls/new', (req, res) => {
       error: 'User is not logged in!',
       user: null,
     };
-    return res.render('error', templateVars);
+    return res.status(401).render('error', templateVars);
   }
 
   const user = db['users'][userId];
@@ -76,11 +76,11 @@ app.get('/urls/new', (req, res) => {
       user: null,
     };
     req.session = null;
-    return res.render('error', templateVars);
+    return res.status(401).render('error', templateVars);
   }
 
   const templateVars = { user };
-  res.render('urls/new', templateVars);
+  res.status(200).render('urls/new', templateVars);
 });
 
 // GET Show URL
@@ -91,7 +91,7 @@ app.get('/urls/:id', (req, res) => {
       error: 'User is not logged in!',
       user: null,
     };
-    return res.render('error', templateVars);
+    return res.status(401).render('error', templateVars);
   }
 
   const user = db['users'][userId];
@@ -101,7 +101,7 @@ app.get('/urls/:id', (req, res) => {
       user: null,
     };
     req.session = null;
-    return res.render('error', templateVars);
+    return res.status(401).render('error', templateVars);
   }
 
   const url = db['urls'][req.params.id];
@@ -110,7 +110,7 @@ app.get('/urls/:id', (req, res) => {
       error: 'This URL does not exist!',
       user: user,
     };
-    return res.render('error', templateVars);
+    return res.status(404).render('error', templateVars);
   }
 
   const urlBelongsToUser = url.userId === userId;
@@ -119,33 +119,33 @@ app.get('/urls/:id', (req, res) => {
       error: 'This URL does not belong to the current user!',
       user,
     };
-    return res.render('error', templateVars);
+    return res.status(403).render('error', templateVars);
   }
 
   const templateVars = { url, user };
-  res.render('urls/show', templateVars);
+  res.status(200).render('urls/show', templateVars);
 });
 
 // GET Register
 app.get('/register', (req, res) => {
   const { userId } = req.session;
   if (userId) {
-    return res.redirect('/urls');
+    return res.status(302).redirect('/urls');
   }
 
   const templateVars = { user: null };
-  res.render('auth/register', templateVars);
+  res.status(200).render('auth/register', templateVars);
 });
 
 // GET Login
 app.get('/login', (req, res) => {
   const { userId } = req.session;
   if (userId) {
-    return res.redirect('/urls');
+    return res.status(302).redirect('/urls');
   }
 
   const templateVars = { user: null };
-  res.render('auth/login', templateVars);
+  res.status(200).render('auth/login', templateVars);
 });
 
 // URLs CRUD API routes
@@ -157,7 +157,7 @@ app.post('/urls', (req, res) => {
       error: 'User is not logged in!',
       user: null,
     };
-    return res.render('error', templateVars);
+    return res.status(401).render('error', templateVars);
   }
 
   const user = db['users'][userId];
@@ -167,7 +167,7 @@ app.post('/urls', (req, res) => {
       user: null,
     };
     req.session = null;
-    return res.render('error', templateVars);
+    return res.status(401).render('error', templateVars);
   }
 
   const { longURL } = req.body;
@@ -176,7 +176,7 @@ app.post('/urls', (req, res) => {
       error: 'Please provide longURL!',
       user,
     };
-    return res.render('error', templateVars);
+    return res.status(422).render('error', templateVars);
   }
 
   const validLongURL = longURL.startsWith('http');
@@ -185,17 +185,17 @@ app.post('/urls', (req, res) => {
       error: 'URL should start with "http"!',
       user,
     };
-    return res.render('error', templateVars);
+    return res.status(422).render('error', templateVars);
   }
 
   const id = generateNewId();
   db['urls'][id] = { id, longURL, userId };
-  res.redirect('/urls');
+  res.status(307).redirect('/urls');
 });
 
 // Read all - GET
 app.get('/urls.json', (req, res) => {
-  res.send(db['urls']);
+  res.status(200).send(db['urls']);
 });
 
 // Read one - GET
@@ -206,10 +206,10 @@ app.get('/u/:id', (req, res) => {
       error: 'This URL does not exist!',
       user: null,
     };
-    return res.render('error', templateVars);
+    return res.status(404).render('error', templateVars);
   }
 
-  res.redirect(url.longURL);
+  res.status(302).redirect(url.longURL);
 });
 
 // Update - POST
@@ -220,7 +220,7 @@ app.post('/urls/:id/edit', (req, res) => {
       error: 'User is not logged in!',
       user: null,
     };
-    return res.render('error', templateVars);
+    return res.status(401).render('error', templateVars);
   }
 
   const user = db['users'][userId];
@@ -230,7 +230,7 @@ app.post('/urls/:id/edit', (req, res) => {
       user: null,
     };
     req.session = null;
-    return res.render('error', templateVars);
+    return res.status(401).render('error', templateVars);
   }
 
   const url = db['urls'][req.params.id];
@@ -239,7 +239,7 @@ app.post('/urls/:id/edit', (req, res) => {
       error: 'This URL does not exist!',
       user,
     };
-    return res.render('error', templateVars);
+    return res.status(404).render('error', templateVars);
   }
 
   const urlBelongsToUser = url.userId === userId;
@@ -248,7 +248,7 @@ app.post('/urls/:id/edit', (req, res) => {
       error: 'This URL does not belong to the current user!',
       user,
     };
-    return res.render('error', templateVars);
+    return res.status(403).render('error', templateVars);
   }
 
   const { longURL } = req.body;
@@ -257,7 +257,7 @@ app.post('/urls/:id/edit', (req, res) => {
       error: 'Please provide longURL!',
       user,
     };
-    return res.render('error', templateVars);
+    return res.status(422).render('error', templateVars);
   }
 
   const validLongURL = longURL.startsWith('http');
@@ -266,11 +266,11 @@ app.post('/urls/:id/edit', (req, res) => {
       error: 'URL should start with "http"!',
       user,
     };
-    return res.render('error', templateVars);
+    return res.status(422).render('error', templateVars);
   }
 
   db['urls'][req.params.id].longURL = longURL;
-  res.redirect('/urls');
+  res.status(307).redirect('/urls');
 });
 
 // Delete - POST
@@ -281,7 +281,7 @@ app.post('/urls/:id/delete', (req, res) => {
       error: 'User is not logged in!',
       user: null,
     };
-    return res.render('error', templateVars);
+    return res.status(401).render('error', templateVars);
   }
 
   const user = db['users'][userId];
@@ -291,7 +291,7 @@ app.post('/urls/:id/delete', (req, res) => {
       user: null,
     };
     req.session = null;
-    return res.render('error', templateVars);
+    return res.status(401).render('error', templateVars);
   }
 
   const url = db['urls'][req.params.id];
@@ -300,7 +300,7 @@ app.post('/urls/:id/delete', (req, res) => {
       error: 'This URL does not exist!',
       user,
     };
-    return res.render('error', templateVars);
+    return res.status(404).render('error', templateVars);
   }
 
   const urlBelongsToUser = url.userId === userId;
@@ -309,32 +309,23 @@ app.post('/urls/:id/delete', (req, res) => {
       error: 'This URL does not belong to the current user!',
       user,
     };
-    return res.render('error', templateVars);
+    return res.status(403).render('error', templateVars);
   }
 
   delete db['urls'][req.params.id];
-  res.redirect('/urls');
+  res.status(307).redirect('/urls');
 });
 
 // Auth API routes
 // Register
 app.post('/register', (req, res) => {
-  const { userId } = req.session;
-  if (userId) {
-    const templateVars = {
-      error: 'User is already logged in!',
-      user: db['users'][userId],
-    };
-    return res.render('error', templateVars);
-  }
-
   let { email, password } = req.body;
   if (!email || !password) {
     const templateVars = {
       error: 'Please provide email and password!',
       user: null,
     };
-    return res.render('error', templateVars);
+    return res.status(422).render('error', templateVars);
   }
 
   const emailExists = getUserByEmail(email, db['users']);
@@ -343,7 +334,7 @@ app.post('/register', (req, res) => {
       error: 'This email is already registered!',
       user: null,
     };
-    return res.render('error', templateVars);
+    return res.status(409).render('error', templateVars);
   }
 
   const id = generateNewId();
@@ -351,64 +342,46 @@ app.post('/register', (req, res) => {
   db['users'][id] = { id, email, password };
 
   req.session.userId = db['users'][id].id;
-  res.redirect('/');
+  res.status(307).redirect('/');
 });
 
 // Login
 app.post('/login', (req, res) => {
-  const { userId } = req.session;
-  if (userId) {
-    const templateVars = {
-      error: 'User is already logged in!',
-      user: db['users'][userId],
-    };
-    return res.render('error', templateVars);
-  }
-
   const { email, password } = req.body;
   if (!email || !password) {
     const templateVars = {
       error: 'Please provide email and password!',
       user: null,
     };
-    return res.render('error', templateVars);
+    return res.status(422).render('error', templateVars);
   }
 
   const user = getUserByEmail(email, db['users']);
   if (!user) {
     const templateVars = {
-      error: 'This user does not exist!',
+      error: 'Invalid credentials!',
       user: null,
     };
-    return res.render('error', templateVars);
+    return res.status(401).render('error', templateVars);
   }
 
   const passwordsMatch = bcrypt.compareSync(password, user.password);
   if (!passwordsMatch) {
     const templateVars = {
-      error: 'Incorrect password!',
+      error: 'Invalid credentials!',
       user: null,
     };
-    return res.render('error', templateVars);
+    return res.status(401).render('error', templateVars);
   }
 
   req.session.userId = user.id;
-  res.redirect('/');
+  res.status(307).redirect('/');
 });
 
 // Logout
 app.post('/logout', (req, res) => {
-  const { userId } = req.session;
-  if (!userId) {
-    const templateVars = {
-      error: 'User is not logged in!',
-      user: null,
-    };
-    return res.render('error', templateVars);
-  }
-
   req.session = null;
-  res.redirect('/login');
+  res.status(307).redirect('/login');
 });
 
 // ------------ LISTENER
