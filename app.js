@@ -3,64 +3,8 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
 
-const urlDatabase = {
-  q2w3e4: {
-    id: 'q2w3e4',
-    longURL: 'https://www.lighthouselabs.ca',
-    userId: 'o9i8u7',
-  },
-  a1s2d3: {
-    id: 'a1s2d3',
-    longURL: 'https://www.google.com',
-    userId: 'g5h6j7',
-  },
-};
-
-const usersDatabase = {
-  o9i8u7: {
-    id: 'o9i8u7',
-    email: 'user1@example.com',
-    password: '123',
-  },
-  g5h6j7: {
-    id: 'g5h6j7',
-    email: 'user2@example.com',
-    password: '123',
-  },
-};
-
-const generateNewId = (length = 6) => {
-  let result = '';
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-};
-
-const getUserByEmail = (email) => {
-  let user = null;
-  for (const id in usersDatabase) {
-    const usr = usersDatabase[id];
-    if (usr.email === email) {
-      user = usersDatabase[id];
-    }
-  }
-  return user;
-};
-
-const getUrlsByUserId = (userId) => {
-  const urls = {};
-  for (const id in urlDatabase) {
-    const u = urlDatabase[id];
-    if (u.userId === userId) {
-      urls[id] = urlDatabase[id];
-    }
-  }
-  return urls;
-};
+const { generateNewId, getUserByEmail, getUrlsByUserId } = require('./utils');
+const db = require('./db');
 
 // ------------ SETUP AND MIDDLEWARES
 const app = express();
@@ -97,7 +41,7 @@ app.get('/urls', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  const user = usersDatabase[userId];
+  const user = db['users'][userId];
   if (!user) {
     const templateVars = {
       error: 'Invalid user!',
@@ -107,7 +51,7 @@ app.get('/urls', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  const urls = getUrlsByUserId(user.id);
+  const urls = getUrlsByUserId(user.id, db['urls']);
   const templateVars = { urls, user };
   res.render('urls/index', templateVars);
 });
@@ -123,7 +67,7 @@ app.get('/urls/new', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  const user = usersDatabase[userId];
+  const user = db['users'][userId];
   if (!user) {
     const templateVars = {
       error: 'Invalid user!',
@@ -148,7 +92,7 @@ app.get('/urls/:id', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  const user = usersDatabase[userId];
+  const user = db['users'][userId];
   if (!user) {
     const templateVars = {
       error: 'Invalid user!',
@@ -158,7 +102,7 @@ app.get('/urls/:id', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  const url = urlDatabase[req.params.id];
+  const url = db['urls'][req.params.id];
   if (!url) {
     const templateVars = {
       error: 'This URL does not exist!',
@@ -214,7 +158,7 @@ app.post('/urls', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  const user = usersDatabase[userId];
+  const user = db['users'][userId];
   if (!user) {
     const templateVars = {
       error: 'Invalid user!',
@@ -243,18 +187,18 @@ app.post('/urls', (req, res) => {
   }
 
   const id = generateNewId();
-  urlDatabase[id] = { id, longURL, userId };
+  db['urls'][id] = { id, longURL, userId };
   res.redirect('/urls');
 });
 
 // Read all - GET
 app.get('/urls.json', (req, res) => {
-  res.send(urlDatabase);
+  res.send(db['urls']);
 });
 
 // Read one - GET
 app.get('/u/:id', (req, res) => {
-  const url = urlDatabase[req.params.id];
+  const url = db['urls'][req.params.id];
   if (!url) {
     const templateVars = {
       error: 'This URL does not exist!',
@@ -277,7 +221,7 @@ app.post('/urls/:id/edit', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  const user = usersDatabase[userId];
+  const user = db['users'][userId];
   if (!user) {
     const templateVars = {
       error: 'Invalid user!',
@@ -287,7 +231,7 @@ app.post('/urls/:id/edit', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  const url = urlDatabase[req.params.id];
+  const url = db['urls'][req.params.id];
   if (!url) {
     const templateVars = {
       error: 'This URL does not exist!',
@@ -323,7 +267,7 @@ app.post('/urls/:id/edit', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  urlDatabase[req.params.id].longURL = longURL;
+  db['urls'][req.params.id].longURL = longURL;
   res.redirect('/urls');
 });
 
@@ -338,7 +282,7 @@ app.post('/urls/:id/delete', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  const user = usersDatabase[userId];
+  const user = db['users'][userId];
   if (!user) {
     const templateVars = {
       error: 'Invalid user!',
@@ -348,7 +292,7 @@ app.post('/urls/:id/delete', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  const url = urlDatabase[req.params.id];
+  const url = db['urls'][req.params.id];
   if (!url) {
     const templateVars = {
       error: 'This URL does not exist!',
@@ -366,7 +310,7 @@ app.post('/urls/:id/delete', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  delete urlDatabase[req.params.id];
+  delete db['urls'][req.params.id];
   res.redirect('/urls');
 });
 
@@ -377,7 +321,7 @@ app.post('/register', (req, res) => {
   if (userId) {
     const templateVars = {
       error: 'User is already logged in!',
-      user: usersDatabase[userId],
+      user: db['users'][userId],
     };
     return res.render('error', templateVars);
   }
@@ -391,7 +335,7 @@ app.post('/register', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  const emailExists = getUserByEmail(email);
+  const emailExists = getUserByEmail(email, db['users']);
   if (emailExists) {
     const templateVars = {
       error: 'This email is already registered!',
@@ -402,9 +346,9 @@ app.post('/register', (req, res) => {
 
   const id = generateNewId();
   password = bcrypt.hashSync(password, 10);
-  usersDatabase[id] = { id, email, password };
+  db['users'][id] = { id, email, password };
 
-  req.session.userId = usersDatabase[id].id;
+  req.session.userId = db['users'][id].id;
   res.redirect('/');
 });
 
@@ -414,7 +358,7 @@ app.post('/login', (req, res) => {
   if (userId) {
     const templateVars = {
       error: 'User is already logged in!',
-      user: usersDatabase[userId],
+      user: db['users'][userId],
     };
     return res.render('error', templateVars);
   }
@@ -428,7 +372,7 @@ app.post('/login', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  const user = getUserByEmail(email);
+  const user = getUserByEmail(email, db['users']);
   if (!user) {
     const templateVars = {
       error: 'This user does not exist!',
