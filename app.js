@@ -1,6 +1,7 @@
 // ------------ REQUIREMENTS
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
 
 const urlDatabase = {
   q2w3e4: {
@@ -366,7 +367,7 @@ app.post('/register', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  const { email, password } = req.body;
+  let { email, password } = req.body;
   if (!email || !password) {
     const templateVars = {
       error: 'Please provide email and password!',
@@ -375,7 +376,7 @@ app.post('/register', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  let emailExists = getUserByEmail(email);
+  const emailExists = getUserByEmail(email);
   if (emailExists) {
     const templateVars = {
       error: 'This email is already registered!',
@@ -385,7 +386,9 @@ app.post('/register', (req, res) => {
   }
 
   const id = generateNewId();
+  password = bcrypt.hashSync(password, 10);
   usersDatabase[id] = { id, email, password };
+
   res.cookie('userId', usersDatabase[id].id);
   res.redirect('/');
 });
@@ -410,7 +413,7 @@ app.post('/login', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  let user = getUserByEmail(email);
+  const user = getUserByEmail(email);
   if (!user) {
     const templateVars = {
       error: 'This user does not exist!',
@@ -419,7 +422,7 @@ app.post('/login', (req, res) => {
     return res.render('error', templateVars);
   }
 
-  const passwordsMatch = user.password === password;
+  const passwordsMatch = bcrypt.compareSync(password, user.password);
   if (!passwordsMatch) {
     const templateVars = {
       error: 'Incorrect password!',
