@@ -15,6 +15,11 @@
             <li class="nav-item">
               <a class="nav-link" href="/urls/new">New URL</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link">
+                <%= user.email %>
+              </a>
+            </li>
           </ul>
           <form class="d-flex" method="POST" action="/logout">
             <button class="btn btn-outline-warning" type="submit">Logout</button>
