@@ -80,12 +80,20 @@ app.get('/', (req, res) => {
 app.get('/urls', (req, res) => {
   const { userId } = req.cookies;
   if (!userId) {
-    return res.send('User is not logged in!');
+    const templateVars = {
+      error: 'User is not logged in!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   const user = usersDatabase[userId];
   if (!user) {
-    return res.send('Invalid user');
+    const templateVars = {
+      error: 'Invalid user!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   const urls = getUrlsByUserId(user.id);
@@ -97,12 +105,20 @@ app.get('/urls', (req, res) => {
 app.get('/urls/new', (req, res) => {
   const { userId } = req.cookies;
   if (!userId) {
-    return res.send('User is not logged in!');
+    const templateVars = {
+      error: 'User is not logged in!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   const user = usersDatabase[userId];
   if (!user) {
-    return res.send('Invalid user');
+    const templateVars = {
+      error: 'Invalid user!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   const templateVars = { user };
@@ -113,17 +129,38 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls/:id', (req, res) => {
   const { userId } = req.cookies;
   if (!userId) {
-    return res.send('User is not logged in!');
+    const templateVars = {
+      error: 'User is not logged in!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   const user = usersDatabase[userId];
   if (!user) {
-    return res.send('Invalid user');
+    const templateVars = {
+      error: 'Invalid user!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   const url = urlDatabase[req.params.id];
   if (!url) {
-    return res.send('Url does not exist!');
+    const templateVars = {
+      error: 'This URL does not exist!',
+      user: user,
+    };
+    return res.render('error', templateVars);
+  }
+
+  const urlBelongsToUser = url.userId === userId;
+  if (!urlBelongsToUser) {
+    const templateVars = {
+      error: 'This URL does not belong to the current user!',
+      user,
+    };
+    return res.render('error', templateVars);
   }
 
   const templateVars = { url, user };
@@ -157,17 +194,38 @@ app.get('/login', (req, res) => {
 app.post('/urls', (req, res) => {
   const { userId } = req.cookies;
   if (!userId) {
-    return res.send('User is not logged in!');
+    const templateVars = {
+      error: 'User is not logged in!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   const user = usersDatabase[userId];
   if (!user) {
-    return res.send('Invalid user');
+    const templateVars = {
+      error: 'Invalid user!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   const { longURL } = req.body;
   if (!longURL) {
-    return res.send('Please provide longURL!');
+    const templateVars = {
+      error: 'Please provide longURL!',
+      user,
+    };
+    return res.render('error', templateVars);
+  }
+
+  const validLongURL = longURL.startsWith('http');
+  if (!validLongURL) {
+    const templateVars = {
+      error: 'URL should start with "http"!',
+      user,
+    };
+    return res.render('error', templateVars);
   }
 
   const id = generateNewId();
@@ -184,7 +242,11 @@ app.get('/urls.json', (req, res) => {
 app.get('/u/:id', (req, res) => {
   const url = urlDatabase[req.params.id];
   if (!url) {
-    return res.send('Url does not exist!');
+    const templateVars = {
+      error: 'This URL does not exist!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   res.redirect(url.longURL);
@@ -194,27 +256,56 @@ app.get('/u/:id', (req, res) => {
 app.post('/urls/:id/edit', (req, res) => {
   const { userId } = req.cookies;
   if (!userId) {
-    return res.send('User is not logged in!');
+    const templateVars = {
+      error: 'User is not logged in!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   const user = usersDatabase[userId];
   if (!user) {
-    return res.send('Invalid user');
+    const templateVars = {
+      error: 'Invalid user!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   const url = urlDatabase[req.params.id];
   if (!url) {
-    return res.send('Url does not exist!');
+    const templateVars = {
+      error: 'This URL does not exist!',
+      user,
+    };
+    return res.render('error', templateVars);
   }
 
   const urlBelongsToUser = url.userId === userId;
   if (!urlBelongsToUser) {
-    return res.send('Url does not belongs to current user');
+    const templateVars = {
+      error: 'This URL does not belong to the current user!',
+      user,
+    };
+    return res.render('error', templateVars);
   }
 
   const { longURL } = req.body;
   if (!longURL) {
-    return res.send('Please provide longURL!');
+    const templateVars = {
+      error: 'Please provide longURL!',
+      user,
+    };
+    return res.render('error', templateVars);
+  }
+
+  const validLongURL = longURL.startsWith('http');
+  if (!validLongURL) {
+    const templateVars = {
+      error: 'URL should start with "http"!',
+      user,
+    };
+    return res.render('error', templateVars);
   }
 
   urlDatabase[req.params.id].longURL = longURL;
@@ -225,22 +316,38 @@ app.post('/urls/:id/edit', (req, res) => {
 app.post('/urls/:id/delete', (req, res) => {
   const { userId } = req.cookies;
   if (!userId) {
-    return res.send('User is not logged in!');
+    const templateVars = {
+      error: 'User is not logged in!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   const user = usersDatabase[userId];
   if (!user) {
-    return res.send('Invalid user');
+    const templateVars = {
+      error: 'Invalid user!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   const url = urlDatabase[req.params.id];
   if (!url) {
-    return res.send('Url does not exist!');
+    const templateVars = {
+      error: 'This URL does not exist!',
+      user,
+    };
+    return res.render('error', templateVars);
   }
 
   const urlBelongsToUser = url.userId === userId;
   if (!urlBelongsToUser) {
-    return res.send('Url does not belongs to current user');
+    const templateVars = {
+      error: 'This URL does not belong to the current user!',
+      user,
+    };
+    return res.render('error', templateVars);
   }
 
   delete urlDatabase[req.params.id];
@@ -252,59 +359,92 @@ app.post('/urls/:id/delete', (req, res) => {
 app.post('/register', (req, res) => {
   const { userId } = req.cookies;
   if (userId) {
-    return res.send('User is already logged in!');
+    const templateVars = {
+      error: 'User is already logged in!',
+      user: usersDatabase[userId],
+    };
+    return res.render('error', templateVars);
   }
 
   const { email, password } = req.body;
-  if ((!email, !password)) {
-    return res.send('Please provide email and password!');
+  if (!email || !password) {
+    const templateVars = {
+      error: 'Please provide email and password!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   let emailExists = getUserByEmail(email);
   if (emailExists) {
-    return res.send('User already exists!');
+    const templateVars = {
+      error: 'This email is already registered!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   const id = generateNewId();
   usersDatabase[id] = { id, email, password };
-  res.redirect('/login');
+  res.cookie('userId', usersDatabase[id].id);
+  res.redirect('/');
 });
 
 // Login
 app.post('/login', (req, res) => {
   const { userId } = req.cookies;
   if (userId) {
-    return res.send('User is already logged in!');
+    const templateVars = {
+      error: 'User is already logged in!',
+      user: usersDatabase[userId],
+    };
+    return res.render('error', templateVars);
   }
 
   const { email, password } = req.body;
-  if ((!email, !password)) {
-    return res.send('Please provide email and password!');
+  if (!email || !password) {
+    const templateVars = {
+      error: 'Please provide email and password!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
-  const user = getUserByEmail(email);
+  let user = getUserByEmail(email);
   if (!user) {
-    return res.send('User not found!');
+    const templateVars = {
+      error: 'This user does not exist!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   const passwordsMatch = user.password === password;
   if (!passwordsMatch) {
-    return res.send('Incorrect password');
+    const templateVars = {
+      error: 'Incorrect password!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   res.cookie('userId', user.id);
-  res.redirect('/urls');
+  res.redirect('/');
 });
 
 // Logout
 app.post('/logout', (req, res) => {
   const { userId } = req.cookies;
   if (!userId) {
-    return res.send('User is not logged in!');
+    const templateVars = {
+      error: 'User is not logged in!',
+      user: null,
+    };
+    return res.render('error', templateVars);
   }
 
   res.clearCookie('userId');
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 // ------------ LISTENER
