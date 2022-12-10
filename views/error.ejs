@@ -19,6 +19,17 @@
             <h3 class="h3">
                 <%= error %>
             </h3>
+            <% if(user){ %>
+                <div style="width:35vw;" class="lead mt-5 mx-auto d-flex justify-content-between">
+                    <a href="/urls">My URLs</a>
+                    <a href="/urls/new">New URL</a>
+                </div>
+                <% } else{ %>
+                    <div style="width:35vw;" class="lead mt-5 mx-auto d-flex justify-content-between">
+                        <a href="/register">Register</a>
+                        <a href="/login">Login</a>
+                    </div>
+                    <% } %>
         </main>
 </body>
 
