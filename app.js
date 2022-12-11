@@ -4,7 +4,13 @@ const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
 const morgan = require('morgan');
 
-const { generateNewId, getUserByEmail, getUrlsByUserId } = require('./utils');
+const {
+  generateNewId,
+  getUserByEmail,
+  getUrlsByUserId,
+  getUrlsWithAnalytics,
+  getUrlStats,
+} = require('./utils');
 const db = require('./db');
 
 // ------------ SETUP AND MIDDLEWARES
@@ -53,29 +59,8 @@ app.get('/urls', (req, res) => {
     return res.status(401).render('error', templateVars);
   }
 
-  const urls = getUrlsByUserId(user.id, db['urls']);
-
-  for (const id in urls) {
-    let uniqueVisitorsIds = [];
-
-    let totalVisits = 0;
-    let uniqueVisits = 0;
-
-    for (const statId in db['stats']) {
-      const { urlId, visitorId } = db['stats'][statId];
-
-      if (id === urlId) {
-        totalVisits++;
-      }
-
-      if (id === urlId && !uniqueVisitorsIds.includes(visitorId)) {
-        uniqueVisitorsIds.push(visitorId);
-        uniqueVisits++;
-      }
-    }
-
-    urls[id] = { ...urls[id], totalVisits, uniqueVisits };
-  }
+  let urls = getUrlsByUserId(user.id, db['urls']);
+  urls = getUrlsWithAnalytics(urls, db['stats']);
 
   const templateVars = { urls, user };
   res.status(200).render('urls/index', templateVars);
@@ -145,13 +130,7 @@ app.get('/urls/:id', (req, res) => {
     return res.status(403).render('error', templateVars);
   }
 
-  const stats = {};
-  for (const id in db['stats']) {
-    if (db['stats'][id].urlId === url.id) {
-      stats[id] = db['stats'][id];
-    }
-  }
-
+  const stats = getUrlStats(url.id, db['stats']);
   const templateVars = { url, user, stats };
   res.status(200).render('urls/show', templateVars);
 });

@@ -31,4 +31,47 @@ const getUrlsByUserId = (userId, database) => {
   return urls;
 };
 
-module.exports = { generateNewId, getUserByEmail, getUrlsByUserId };
+const getUrlsWithAnalytics = (urls, database) => {
+  const urlsWithAnalytics = {};
+  for (const id in urls) {
+    let uniqueVisitorsIds = [];
+
+    let totalVisits = 0;
+    let uniqueVisits = 0;
+
+    for (const statId in database) {
+      const { urlId, visitorId } = database[statId];
+
+      if (id === urlId) {
+        totalVisits++;
+      }
+
+      if (id === urlId && !uniqueVisitorsIds.includes(visitorId)) {
+        uniqueVisitorsIds.push(visitorId);
+        uniqueVisits++;
+      }
+    }
+
+    urlsWithAnalytics[id] = { ...urls[id], totalVisits, uniqueVisits };
+  }
+
+  return urlsWithAnalytics;
+};
+
+const getUrlStats = (urlId, database) => {
+  const stats = {};
+  for (const id in database) {
+    if (database[id].urlId === urlId) {
+      stats[id] = database[id];
+    }
+  }
+  return stats;
+};
+
+module.exports = {
+  generateNewId,
+  getUserByEmail,
+  getUrlsByUserId,
+  getUrlsWithAnalytics,
+  getUrlStats,
+};
