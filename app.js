@@ -3,6 +3,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
 const morgan = require('morgan');
+const methodOverride = require('method-override');
 
 const { generateNewId, getUserByEmail, getUrlsByUserId } = require('./utils');
 const db = require('./db');
@@ -24,6 +25,7 @@ app.use(
   })
 );
 app.use(morgan('dev'));
+app.use(methodOverride('_method'));
 
 // ------------ ROUTES/ENDPOINTS
 // Rendering routes
@@ -213,7 +215,7 @@ app.get('/u/:id', (req, res) => {
 });
 
 // Update - POST
-app.post('/urls/:id/edit', (req, res) => {
+app.put('/urls/:id', (req, res) => {
   const { userId } = req.session;
   if (!userId) {
     const templateVars = {
@@ -274,7 +276,7 @@ app.post('/urls/:id/edit', (req, res) => {
 });
 
 // Delete - POST
-app.post('/urls/:id/delete', (req, res) => {
+app.delete('/urls/:id', (req, res) => {
   const { userId } = req.session;
   if (!userId) {
     const templateVars = {
