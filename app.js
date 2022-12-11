@@ -14,6 +14,33 @@ const apiLimiter = rateLimit({
   message: 'Too many urls created from this IP, please try again after 15 min',
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  handler: (req, res, next, options) => {
+    const { userId } = req.session;
+    if (!userId) {
+      const templateVars = {
+        error: options.message,
+        user: null,
+      };
+      return res.render('error', templateVars);
+    }
+
+    const user = db['users'][userId];
+    if (!user) {
+      const templateVars = {
+        error: options.message,
+        user: null,
+      };
+      req.session = null;
+      return res.render('error', templateVars);
+    }
+
+    const templateVars = {
+      error: options.message,
+      user,
+    };
+
+    return res.render('error', templateVars);
+  },
 });
 
 const createAccountLimiter = rateLimit({
@@ -22,7 +49,34 @@ const createAccountLimiter = rateLimit({
   message:
     'Too many accounts created from this IP, please try again after an hour',
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers,
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  handler: (req, res, next, options) => {
+    const { userId } = req.session;
+    if (!userId) {
+      const templateVars = {
+        error: options.message,
+        user: null,
+      };
+      return res.render('error', templateVars);
+    }
+
+    const user = db['users'][userId];
+    if (!user) {
+      const templateVars = {
+        error: options.message,
+        user: null,
+      };
+      req.session = null;
+      return res.render('error', templateVars);
+    }
+
+    const templateVars = {
+      error: options.message,
+      user,
+    };
+
+    return res.render('error', templateVars);
+  },
 });
 
 // ------------ SETUP AND MIDDLEWARES
