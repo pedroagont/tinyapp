@@ -42,6 +42,30 @@
           </form>
         </div>
       </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover my-5 text-center caption-top">
+          <caption>Visits log</caption>
+          <thead class="table-primary">
+            <tr>
+              <th scope="col">Visitor Id</th>
+              <th scope="col">Created At</th>
+            </tr>
+          </thead>
+          <tbody class="table-group-divider">
+            <% for (let id in stats) { %>
+              <tr>
+                <td>
+                  <%= stats[id].visitorId %>
+                </td>
+                <td>
+                  <%= new Date(stats[id].createdAt).toLocaleString() %>
+                </td>
+              </tr>
+              <% } %>
+          </tbody>
+        </table>
+      </div>
     </main>
 </body>
 
