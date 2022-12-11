@@ -1,7 +1,19 @@
 const should = require('chai').should();
-const { generateNewId, getUserByEmail } = require('../utils');
+const { generateNewId, getUserByEmail, getUrlsByUserId } = require('../utils');
 
 const db = {
+  urls: {
+    abc123: {
+      id: 'abc123',
+      longURL: 'https://www.lighthouselabs.ca',
+      userId: 'zxc135',
+    },
+    def456: {
+      id: 'def456',
+      longURL: 'https://www.google.com',
+      userId: 'cvb246',
+    },
+  },
   users: {
     zxc135: {
       id: 'zxc135',
@@ -38,7 +50,7 @@ describe('utils', () => {
     it('should return an object with properties id, email and password', () => {
       const user = getUserByEmail('user1@test.com', db['users']);
 
-      user.should.be.a('object');
+      user.should.be.an('object');
       user.should.have.property('id');
       user.should.have.property('email');
       user.should.have.property('password');
@@ -50,6 +62,33 @@ describe('utils', () => {
     it('should return undefined when user is not found', () => {
       const user = getUserByEmail('bad-email@test.com', db['users']);
       should.not.exist(user);
+    });
+  });
+
+  describe('#getUrlsByUserId()', () => {
+    it('should return an object on objects with properties id, longURL and userId', () => {
+      const urls = getUrlsByUserId('cvb246', db['urls']);
+      urls.should.be.an('object');
+
+      for (const id in urls) {
+        const url = urls[id];
+        url.should.have.property('id');
+        url.should.have.property('longURL');
+        url.should.have.property('userId');
+
+        url.id.should.be.a('string');
+        url.longURL.should.be.a('string');
+        url.userId.should.be.a('string');
+      }
+    });
+    it('should return empty object when userId is not found', () => {
+      const urls = getUrlsByUserId('bad-id', db['urls']);
+      urls.should.be.an('object');
+
+      for (const id in urls) {
+        const url = urls[id];
+        should.not.exist(url);
+      }
     });
   });
 });
