@@ -3,9 +3,27 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
 const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
 
 const { generateNewId, getUserByEmail, getUrlsByUserId } = require('./utils');
 const db = require('./db');
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes),
+  message: 'Too many urls created from this IP, please try again after 15 min',
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+const createAccountLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // Limit each IP to 5 create account requests per `window` (here, per hour)
+  message:
+    'Too many accounts created from this IP, please try again after an hour',
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers,
+});
 
 // ------------ SETUP AND MIDDLEWARES
 const app = express();
@@ -150,7 +168,7 @@ app.get('/login', (req, res) => {
 
 // URLs CRUD API routes
 // Create - POST
-app.post('/urls', (req, res) => {
+app.post('/urls', apiLimiter, (req, res) => {
   const { userId } = req.session;
   if (!userId) {
     const templateVars = {
@@ -318,7 +336,7 @@ app.post('/urls/:id/delete', (req, res) => {
 
 // Auth API routes
 // Register
-app.post('/register', (req, res) => {
+app.post('/register', createAccountLimiter, (req, res) => {
   let { email, password } = req.body;
   if (!email || !password) {
     const templateVars = {
