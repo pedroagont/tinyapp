@@ -16,40 +16,50 @@
   <%- include('../partials/_header') %>
     <main class="container">
       <h1 class="display-5 text-center py-5">My URLs 🔗</h1>
-      <table class="table table-hover">
-        <thead class="table-primary">
-          <tr>
-            <th scope="col">Short URL</th>
-            <th scope="col">Long URL</th>
-            <th scope="col">Edit</th>
-            <th scope="col">Delete</th>
-          </tr>
-        </thead>
-        <tbody class="table-group-divider">
-          <% for (let id in urls) { %>
+      <div class="table-responsive">
+        <table class="table table-hover text-center">
+          <thead class="table-primary">
             <tr>
-              <td>
-                <a href="/u/<%= id %>">
-                  /u/<%= id %>
-                </a>
-              </td>
-              <td>
-                <%= urls[id].longURL %>
-              </td>
-              <td>
-                <a href="/urls/<%= id %>" class="btn btn-outline-warning">Edit</a>
-              </td>
-              <td>
-                <form method="POST" action="/urls/<%= id %>/delete">
-                  <button type="submit" class="btn btn-outline-danger">
-                    Delete
-                  </button>
-                </form>
-              </td>
+              <th scope="col">Short URL</th>
+              <th scope="col">Long URL</th>
+              <th scope="col">Total Visits</th>
+              <th scope="col">Unique Visits</th>
+              <th scope="col">Edit</th>
+              <th scope="col">Delete</th>
             </tr>
-            <% } %>
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="table-group-divider">
+            <% for (let id in urls) { %>
+              <tr>
+                <td>
+                  <a href="/u/<%= id %>">
+                    /u/<%= id %>
+                  </a>
+                </td>
+                <td>
+                  <%= urls[id].longURL %>
+                </td>
+                <td>
+                  <%= urls[id].totalVisits %>
+                </td>
+                <td>
+                  <%= urls[id].uniqueVisits %>
+                </td>
+                <td>
+                  <a href="/urls/<%= id %>" class="btn btn-outline-warning">Edit</a>
+                </td>
+                <td>
+                  <form method="POST" action="/urls/<%= id %>/delete">
+                    <button type="submit" class="btn btn-outline-danger">
+                      Delete
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              <% } %>
+          </tbody>
+        </table>
+      </div>
     </main>
 </body>
 
