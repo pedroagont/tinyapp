@@ -23,6 +23,20 @@ const db = {
       password: '123',
     },
   },
+  stats: {
+    t7y8u9: {
+      id: 't7y8u9',
+      visitorId: 'c1n4m6',
+      urlId: 'a1s2d3',
+      createdAt: 1670747099376,
+    },
+    f3h4j5: {
+      id: 'f3h4j5',
+      visitorId: 'c1n4m6',
+      urlId: 'a1s2d3',
+      createdAt: 1670747128992,
+    },
+  },
 };
 
 module.exports = db;
