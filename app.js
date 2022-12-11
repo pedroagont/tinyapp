@@ -54,6 +54,29 @@ app.get('/urls', (req, res) => {
   }
 
   const urls = getUrlsByUserId(user.id, db['urls']);
+
+  for (const id in urls) {
+    let uniqueVisitorsIds = [];
+
+    let totalVisits = 0;
+    let uniqueVisits = 0;
+
+    for (const statId in db['stats']) {
+      const { urlId, visitorId } = db['stats'][statId];
+
+      if (id === urlId) {
+        totalVisits++;
+      }
+
+      if (id === urlId && !uniqueVisitorsIds.includes(visitorId)) {
+        uniqueVisitorsIds.push(visitorId);
+        uniqueVisits++;
+      }
+    }
+
+    urls[id] = { ...urls[id], totalVisits, uniqueVisits };
+  }
+
   const templateVars = { urls, user };
   res.status(200).render('urls/index', templateVars);
 });
@@ -122,7 +145,14 @@ app.get('/urls/:id', (req, res) => {
     return res.status(403).render('error', templateVars);
   }
 
-  const templateVars = { url, user };
+  const stats = {};
+  for (const id in db['stats']) {
+    if (db['stats'][id].urlId === url.id) {
+      stats[id] = db['stats'][id];
+    }
+  }
+
+  const templateVars = { url, user, stats };
   res.status(200).render('urls/show', templateVars);
 });
 
@@ -208,6 +238,17 @@ app.get('/u/:id', (req, res) => {
     };
     return res.status(404).render('error', templateVars);
   }
+
+  let { visitorId } = req.session;
+  if (!visitorId) {
+    req.session.visitorId = generateNewId();
+    return res.status(302).redirect(`/u/${url.id}`);
+  }
+
+  const id = generateNewId();
+  const urlId = req.params.id;
+  const createdAt = Date.now();
+  db['stats'][id] = { id, visitorId, urlId, createdAt };
 
   res.status(302).redirect(url.longURL);
 });
