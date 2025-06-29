@@ -11,8 +11,8 @@ const db = require('./db');
 const app = express();
 const port = 3000;
 
-app.set('view engine', 'ejs');
-app.use(express.urlencoded({ extended: true }));
+app.set('view engine', 'ejs'); // ejs templates
+app.use(express.urlencoded({ extended: true })); // req.body
 app.use(
   cookieSession({
     name: 'session',
@@ -22,8 +22,8 @@ app.use(
     // maxAge: 24 * 60 * 60 * 1000 // 24 hours
     maxAge: 10 * 60 * 1000, // 10 min
   })
-);
-app.use(morgan('dev'));
+); // req.session
+app.use(morgan('dev')); // logs every incoming request
 
 // ------------ ROUTES/ENDPOINTS
 // Rendering routes
@@ -43,7 +43,7 @@ app.get('/urls', (req, res) => {
     return res.status(401).render('error', templateVars);
   }
 
-  const user = db['users'][userId];
+  const user = db.users[userId];
   if (!user) {
     const templateVars = {
       error: 'Invalid user!',
@@ -53,7 +53,7 @@ app.get('/urls', (req, res) => {
     return res.status(401).render('error', templateVars);
   }
 
-  const urls = getUrlsByUserId(user.id, db['urls']);
+  const urls = getUrlsByUserId(user.id, db.urls);
   const templateVars = { urls, user };
   res.status(200).render('urls/index', templateVars);
 });
@@ -69,7 +69,7 @@ app.get('/urls/new', (req, res) => {
     return res.status(401).render('error', templateVars);
   }
 
-  const user = db['users'][userId];
+  const user = db.users[userId];
   if (!user) {
     const templateVars = {
       error: 'Invalid user!',
@@ -94,7 +94,7 @@ app.get('/urls/:id', (req, res) => {
     return res.status(401).render('error', templateVars);
   }
 
-  const user = db['users'][userId];
+  const user = db.users[userId];
   if (!user) {
     const templateVars = {
       error: 'Invalid user!',
@@ -104,7 +104,7 @@ app.get('/urls/:id', (req, res) => {
     return res.status(401).render('error', templateVars);
   }
 
-  const url = db['urls'][req.params.id];
+  const url = db.urls[req.params.id];
   if (!url) {
     const templateVars = {
       error: 'This URL does not exist!',
@@ -148,7 +148,7 @@ app.get('/login', (req, res) => {
   res.status(200).render('auth/login', templateVars);
 });
 
-// URLs CRUD API routes
+// URLs CRUD API routes (server side POST-REDIRECT-GET pattern)
 // Create - POST
 app.post('/urls', (req, res) => {
   const { userId } = req.session;
@@ -160,7 +160,7 @@ app.post('/urls', (req, res) => {
     return res.status(401).render('error', templateVars);
   }
 
-  const user = db['users'][userId];
+  const user = db.users[userId];
   if (!user) {
     const templateVars = {
       error: 'Invalid user!',
@@ -189,18 +189,18 @@ app.post('/urls', (req, res) => {
   }
 
   const id = generateNewId();
-  db['urls'][id] = { id, longURL, userId };
-  res.status(307).redirect('/urls');
+  db.urls[id] = { id, longURL, userId };
+  res.status(303).redirect('/urls');
 });
 
 // Read all - GET
 app.get('/urls.json', (req, res) => {
-  res.status(200).send(db['urls']);
+  res.status(200).send(db.urls);
 });
 
 // Read one - GET
 app.get('/u/:id', (req, res) => {
-  const url = db['urls'][req.params.id];
+  const url = db.urls[req.params.id];
   if (!url) {
     const templateVars = {
       error: 'This URL does not exist!',
@@ -223,7 +223,7 @@ app.post('/urls/:id/edit', (req, res) => {
     return res.status(401).render('error', templateVars);
   }
 
-  const user = db['users'][userId];
+  const user = db.users[userId];
   if (!user) {
     const templateVars = {
       error: 'Invalid user!',
@@ -233,7 +233,7 @@ app.post('/urls/:id/edit', (req, res) => {
     return res.status(401).render('error', templateVars);
   }
 
-  const url = db['urls'][req.params.id];
+  const url = db.urls[req.params.id];
   if (!url) {
     const templateVars = {
       error: 'This URL does not exist!',
@@ -269,8 +269,8 @@ app.post('/urls/:id/edit', (req, res) => {
     return res.status(422).render('error', templateVars);
   }
 
-  db['urls'][req.params.id].longURL = longURL;
-  res.status(307).redirect('/urls');
+  db.urls[req.params.id].longURL = longURL;
+  res.status(303).redirect('/urls');
 });
 
 // Delete - POST
@@ -284,7 +284,7 @@ app.post('/urls/:id/delete', (req, res) => {
     return res.status(401).render('error', templateVars);
   }
 
-  const user = db['users'][userId];
+  const user = db.users[userId];
   if (!user) {
     const templateVars = {
       error: 'Invalid user!',
@@ -294,7 +294,7 @@ app.post('/urls/:id/delete', (req, res) => {
     return res.status(401).render('error', templateVars);
   }
 
-  const url = db['urls'][req.params.id];
+  const url = db.urls[req.params.id];
   if (!url) {
     const templateVars = {
       error: 'This URL does not exist!',
@@ -312,8 +312,8 @@ app.post('/urls/:id/delete', (req, res) => {
     return res.status(403).render('error', templateVars);
   }
 
-  delete db['urls'][req.params.id];
-  res.status(307).redirect('/urls');
+  delete db.urls[req.params.id];
+  res.status(303).redirect('/urls');
 });
 
 // Auth API routes
@@ -328,7 +328,7 @@ app.post('/register', (req, res) => {
     return res.status(422).render('error', templateVars);
   }
 
-  const emailExists = getUserByEmail(email, db['users']);
+  const emailExists = getUserByEmail(email, db.users);
   if (emailExists) {
     const templateVars = {
       error: 'This email is already registered!',
@@ -339,10 +339,10 @@ app.post('/register', (req, res) => {
 
   const id = generateNewId();
   password = bcrypt.hashSync(password, 10);
-  db['users'][id] = { id, email, password };
+  db.users[id] = { id, email, password };
 
-  req.session.userId = db['users'][id].id;
-  res.status(307).redirect('/');
+  req.session.userId = db.users[id].id;
+  res.status(303).redirect('/');
 });
 
 // Login
@@ -356,7 +356,7 @@ app.post('/login', (req, res) => {
     return res.status(422).render('error', templateVars);
   }
 
-  const user = getUserByEmail(email, db['users']);
+  const user = getUserByEmail(email, db.users);
   if (!user) {
     const templateVars = {
       error: 'Invalid credentials!',
@@ -375,13 +375,13 @@ app.post('/login', (req, res) => {
   }
 
   req.session.userId = user.id;
-  res.status(307).redirect('/');
+  res.status(303).redirect('/');
 });
 
 // Logout
 app.post('/logout', (req, res) => {
   req.session = null;
-  res.status(307).redirect('/login');
+  res.status(303).redirect('/login');
 });
 
 // ------------ LISTENER
